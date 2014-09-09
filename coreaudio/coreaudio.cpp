@@ -1,8 +1,10 @@
-// coreaudio.cpp : ¶¨Òå¿ØÖÆÌ¨Ó¦ÓÃ³ÌÐòµÄÈë¿Úµã¡£
+// coreaudio.cpp
 //
 
 #include "stdafx.h"
-#include "Mmdeviceapi.h"
+#include "Mmdeviceapi.h"   //IMMDevice interface
+#include  "Audioclient.h" //WASAPI
+#include "Audiopolicy.h"  //WASAPI interface
 
 int _tmain(int argc, _TCHAR *argv[])
 {
@@ -38,6 +40,13 @@ int _tmain(int argc, _TCHAR *argv[])
 	// printf("%s \n",strid);
 	DWORD pdwState;
 	pDDevice->GetState(&pdwState);
+
+    //
+    //WASAPI
+    //
+    IAudioClient *Audioclient;
+    pDDevice->Activate(IID_IAudioClient,CLSCTX_ALL,NULL,&Audioclient);
+    Audioclient->Initialize(AUDCLNT_SHAREMODE_SHARED,AUDCLNT_STREAMFLAGS_LOOPBACK,);
     return 0;
 }
 
