@@ -25,6 +25,7 @@ using namespace std;
 #define DATA 44 //
 #endif
 extern int GetWaveData(UINT8* data ,FILE* fp,UINT32 framelen,int bitperSample);
+extern void GetWaveFormate(FILE *fp, WAVEFORMATEX *waveformat);
 class WaveFile
 {
 public:

@@ -11,7 +11,6 @@
 #define REFTIMES_PER_SEC  10000*1000*1
 #define REFTIMES_PER_MILLISEC  10000
 
-// #define EXIT_ON_ERROR(hres)  \
 //     if (FAILED(hres)) { goto Exit; }
 #define SAFE_RELEASE(punk)  \
     if ((punk) != NULL)  \
@@ -31,9 +30,14 @@ int _tmain(int argc, _TCHAR *argv[])
     IAudioClient *pAudioClient = NULL;
     IAudioRenderClient *pRenderClient = NULL;
     WAVEFORMATEX *pwfx = NULL;
+    WAVEFORMATEX wavefx ;
+	WAVEFORMATEX wavefx1 ;
+	WAVEFORMATEX *devicefx =&wavefx1 ;;
+
     UINT32 bufferFrameCount;
     UINT32 numFramesAvailable;
     UINT32 numFramesPadding;
+    UINT32 readnum = 0;
     BYTE *pData;
     DWORD flags = 0;
 	CoInitialize(NULL);  //to tell system creat COM by single thread!!!!
@@ -41,19 +45,22 @@ int _tmain(int argc, _TCHAR *argv[])
              CLSID_MMDeviceEnumerator, NULL,
              CLSCTX_ALL, IID_IMMDeviceEnumerator,
              (void **)&pEnumerator);
-    // EXIT_ON_ERROR(hr)
 
     hr = pEnumerator->GetDefaultAudioEndpoint(
              eRender, eConsole, &pDevice);
-    // EXIT_ON_ERROR(hr)
-
+    
     hr = pDevice->Activate(
              IID_IAudioClient, CLSCTX_ALL,
              NULL, (void **)&pAudioClient);
-    // EXIT_ON_ERROR(hr)
 
     hr = pAudioClient->GetMixFormat(&pwfx);
-    // EXIT_ON_ERROR(hr)
+
+    FILE *fp;
+    string fname = "C:\\Users\\rickon\\Desktop\\caiqin.wav";
+    if ((fp = fopen(fname.c_str(), "rb")) == NULL)
+    {
+        printf("can not open this wave file\n");
+    }
 
     hr = pAudioClient->Initialize(
              AUDCLNT_SHAREMODE_SHARED,
@@ -62,59 +69,29 @@ int _tmain(int argc, _TCHAR *argv[])
              0,
              pwfx,
              NULL);
-    // EXIT_ON_ERROR(hr)
 
-    // Tell the audio source which format to use.
-    // hr = pMySource->SetFormat(pwfx);
-    //EXIT_ON_ERROR(hr);
-
-    // Get the actual size of the allocated buffer.
     hr = pAudioClient->GetBufferSize(&bufferFrameCount);
-    // EXIT_ON_ERROR(hr)
 
     hr = pAudioClient->GetService(
              IID_IAudioRenderClient,
              (void **)&pRenderClient);
-    // EXIT_ON_ERROR(hr)
 
     // Grab the entire buffer for the initial fill operation.
     hr = pRenderClient->GetBuffer(bufferFrameCount, &pData);
-    // EXIT_ON_ERROR(hr)
 
-    // Load the initial data into the shared buffer.
-    FILE *fp;
-    string fname = "C:\\Users\\rickon\\Desktop\\01.wav";
-    if ((fp = fopen(fname.c_str(), "rb")) == NULL)
-    {
-        printf("can not open this wave file\n");
-    }
-    int bitperSample = 0;
-    fseek(fp,BITSPERSAMPLE,SEEK_SET);
-    fread(&bitperSample,sizeof(UINT16),1,fp);
-    bitperSample = (bitperSample &0xff00>>8) |(bitperSample&0x00ff <<8);
+
     fseek(fp,DATA,SEEK_SET);
-    // GetWaveData( pData ,fp,bufferFrameCount ,bitperSample);
+
     fread(pData,sizeof(BYTE),bufferFrameCount*8,fp);
-    // 
-    // 
-    // printf("%x %x %x %x %x\n", pData[0], pData[1],pData[2],pData[3],pData[4] );
-    // for (int i = 0; i < 0xcc44; i+=16)
-    // {
-    //     printf("%x%x %x%x %x%x %x%x %x%x %x%x %x%x %x%x\n", 
-    //         pData[i], pData[i+1],pData[i+2],pData[i+3],pData[i+4],
-    //         pData[i+5],pData[i+6],pData[i+7],pData[i+8], pData[i+1+8],pData[i+2+8],pData[i+3+8],pData[i+4+8],
-    //         pData[i+5+8],pData[i+6+8],pData[i+7+8]);
-    // }
+
 
     hr = pRenderClient->ReleaseBuffer(bufferFrameCount, flags);
-    // EXIT_ON_ERROR(hr)
 
     // Calculate the actual duration of the allocated buffer.
     hnsActualDuration = (double)REFTIMES_PER_SEC *
                         bufferFrameCount / pwfx->nSamplesPerSec;
 
     hr = pAudioClient->Start();  // Start playing.
-    // EXIT_ON_ERROR(hr)
 
     // Each loop fills about half of the shared buffer.
     while (flags != AUDCLNT_BUFFERFLAGS_SILENT)
@@ -124,32 +101,27 @@ int _tmain(int argc, _TCHAR *argv[])
 
         // See how much buffer space is available.
         hr = pAudioClient->GetCurrentPadding(&numFramesPadding);
-        // EXIT_ON_ERROR(hr)
 
         numFramesAvailable = bufferFrameCount - numFramesPadding;
 
         // Grab all the available space in the shared buffer.
         hr = pRenderClient->GetBuffer(numFramesAvailable, &pData);
-        // EXIT_ON_ERROR(hr)
 
-        // Get next 1/2-second of data from the audio source.
         // hr = pMySource->LoadData(numFramesAvailable, pData, &flags);
-       // EXIT_ON_ERROR(hr);
         //GetWaveData( pData ,fp,numFramesAvailable ,bitperSample);
-        fread(pData,sizeof(BYTE),numFramesAvailable*8,fp);
+        readnum=fread(pData,sizeof(BYTE),numFramesAvailable*8,fp);
 
         hr = pRenderClient->ReleaseBuffer(numFramesAvailable, flags);
-        // EXIT_ON_ERROR(hr)
+        if(readnum < numFramesAvailable*8)
+            break;
     }
 
     // Wait for last data in buffer to play before stopping.
     Sleep((DWORD)(hnsActualDuration / REFTIMES_PER_MILLISEC / 2));
 
     hr = pAudioClient->Stop();  // Stop playing.
-    // EXIT_ON_ERROR(hr)
 
-// Exit:
-    // // CoTaskMemFree(pwfx);
+
     SAFE_RELEASE(pEnumerator)
     SAFE_RELEASE(pDevice)
     SAFE_RELEASE(pAudioClient)

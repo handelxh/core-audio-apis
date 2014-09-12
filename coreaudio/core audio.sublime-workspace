@@ -1,0 +1,782 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"UINT",
+				"UINT8"
+			],
+			[
+				"data",
+				"data1"
+			],
+			[
+				"UN",
+				"UINT32"
+			],
+			[
+				"size",
+				"sizeof"
+			],
+			[
+				"getva",
+				"GETWAVEDATA"
+			],
+			[
+				"def",
+				"define"
+			],
+			[
+				"da",
+				"Data"
+			],
+			[
+				"buff",
+				"bufferFrameCount"
+			],
+			[
+				"Fa",
+				"FALSE"
+			],
+			[
+				"IS",
+				"IsDAC"
+			],
+			[
+				"add",
+				"m_BaseAddr"
+			],
+			[
+				"Is",
+				"IsDAC"
+			],
+			[
+				"getc",
+				"GetCurSel"
+			],
+			[
+				"read",
+				"ReadRegister"
+			],
+			[
+				"enab",
+				"enableDrc"
+			],
+			[
+				"s",
+				"step1"
+			],
+			[
+				"bit",
+				"bit1"
+			],
+			[
+				"fa",
+				"m_fAT"
+			],
+			[
+				"fe",
+				"fES"
+			],
+			[
+				"Updatedrc",
+				"UpdateDrcCompressTByUsb"
+			],
+			[
+				"updated",
+				"UpdateDrcCompressTByUsb"
+			],
+			[
+				"updat",
+				"UpdateDrcLimitNoiseByUsb"
+			],
+			[
+				"Udate",
+				"UpdateDrcTimeByUsb"
+			],
+			[
+				"Update",
+				"UpdateDrcSetting"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"contents": "\n#include \"stdafx.h\"\n#include <string.h>\n#include \"Mmdeviceapi.h\"   //IMMDevice interface\n#include  \"Audioclient.h\" //WASAPI\n#include \"Audiopolicy.h\"  //WASAPI interface\n#include <EndpointVolume.h>\n#include \"CWaveFile.h\"\n\nint GetWaveData(UINT8 *data , FILE *fp, UINT32 framelen , int bitperSample)\n{\n    UINT32 temp32[60000];\n    UINT16 temp16[60000];\n    UINT8  temp8[60000];\n    UINT32 data1[60000];\n    if (bitperSample == 8)\n    {\n        fread(temp8, sizeof(UINT8), framelen, fp);\n        for (int i = 0; i < framelen; ++i)\n        {\n            data1[i] = temp8[i];\n        }\n        memcpy(data, data1, framelen * 8);\n        return 0;\n    }\n    else if (bitperSample == 16)\n    {\n        fread(temp16, sizeof(UINT16), framelen, fp);\n        for (int i = 0; i < framelen; ++i)\n        {\n            data1[i] = temp16[i];\n        }\n        memcpy(data, data1, framelen * 8);\n        return 0;\n    }\n    else if (bitperSample == 32)\n    {\n        fread(temp32, sizeof(UINT32), framelen, fp);\n        for (int i = 0; i < framelen; ++i)\n        {\n            data1[i] = temp32[i];\n        }\n        memcpy(data, data1, framelen * 8);\n        return 0;\n    }\n    else\n        return 0;\n}\n\n\n// 5249 4646 a099 0000 5741 5645 666d 7420\n// 1000 0000 0100 0200 007d 0000 00fa 0000\n// 0200 0800 6461 7461 7c99 0000\n\n// 5249 4646 a4e3 0203 5741 5645 666d 7420\n// 1000 0000 0100 0200 44ac 0000 10b1 0200\n// 0400 1000 6461 7461 80e3 0203\n// \n// 5249 4646 a4aa 6b00 5741 5645 666d 7420\n// 1000 0000 0300 0200 44ac 0000 2062 0500\n// 0800 2000 6461 7461 80aa 6b00 \n\n\nvoid GetWaveFormate(FILE* fp,WAVEFORMATEX *waveformat)\n{	\n	\n\n}",
+			"file": "getwave.cpp",
+			"file_size": 1614,
+			"file_write_time": 130548900750960264,
+			"settings":
+			{
+				"buffer_size": 1619,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "coreaudio.cpp",
+			"settings":
+			{
+				"buffer_size": 5344,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "CWaveFile.h",
+			"settings":
+			{
+				"buffer_size": 3650,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "/C/Users/rickon/Desktop/1.wav",
+			"settings":
+			{
+				"buffer_size": 98287,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"contents": "// coreaudio.cpp\n//\n\n#include \"stdafx.h\"\n#include <string.h>\n#include \"Mmdeviceapi.h\"   //IMMDevice interface\n#include  \"Audioclient.h\" //WASAPI\n#include \"Audiopolicy.h\"  //WASAPI interface\n#include <EndpointVolume.h>\n// #include \"CWaveFile.h\"\n#ifndef BUFFRETIME\n#define BUFFRETIME 1*1000*10  // \n#endif\n#define REFTIMES_PER_SEC  10000000\n#define REFTIMES_PER_MILLISEC  10000\nint _tmain(int argc, _TCHAR *argv[])\n{\n    const CLSID CLSID_MMDeviceEnumerator = __uuidof(MMDeviceEnumerator);\n    const IID IID_IMMDeviceEnumerator = __uuidof(IMMDeviceEnumerator);\n    const IID IID_IAudioRenderClient = __uuidof(IAudioRenderClient);\n    REFERENCE_TIME hnsRequestedDuration = REFTIMES_PER_SEC;\n    REFERENCE_TIME hnsActualDuration;\n    HRESULT hr;\n    IMMDeviceEnumerator *pEnumerator;\n\n    CoInitialize(NULL);  //to tell system creat COM by single thread!!!!\n    hr = CoCreateInstance(\n             CLSID_MMDeviceEnumerator, NULL,\n             CLSCTX_ALL, IID_IMMDeviceEnumerator,\n             (void **)&pEnumerator);   //creat COM instance\n    //\n    //Generates a collection of audio endpoint devices that meet the specified criteria\n    //\n    IMMDeviceCollection *pCDevices;\n    pEnumerator->EnumAudioEndpoints(eRender, DEVICE_STATE_ACTIVE, &pCDevices);\n    unsigned int i = 0;\n    pCDevices->GetCount(&i);\n    printf(\"device number is : %d\\n\", i);\n    //\n    //  Generate a Default IMMDevice interface -_-!!\n    //  we also can generate it by pCDevice -> Iteam(0~n-1,&pDDevice)\n    //\n    IMMDevice *pDDevice;\n    pEnumerator->GetDefaultAudioEndpoint(eRender, eConsole, &pDDevice);\n\n    //\n    //\n    //\n    LPWSTR strid = NULL;\n    pDDevice->GetId(&strid);\n    // printf(\"%s \\n\",strid);\n    DWORD pdwState;\n    pDDevice->GetState(&pdwState);\n\n    //\n    //WASAPI\n    //\n    WAVEFORMATEX *pwfx = NULL;\n    IAudioClient *Audioclient = NULL;\n    LPCGUID AudioSessionGuid = NULL;\n    pDDevice->Activate(__uuidof(IAudioClient), CLSCTX_ALL, NULL, (void **)(&Audioclient));\n    Audioclient->GetMixFormat(&pwfx);\n    Audioclient->Initialize(AUDCLNT_SHAREMODE_SHARED, 0,\n                            hnsRequestedDuration, 0, pwfx, AudioSessionGuid);\n\n    UINT32 bufferFrameCount;\n    Audioclient->GetBufferSize(&bufferFrameCount);\n\n    IAudioRenderClient *pRenderClient = NULL;\n    Audioclient->GetService(\n        IID_IAudioRenderClient,\n        (void **)&pRenderClient);\n    //\n    // Grab the entire buffer for the initial fill operation.\n    //\n    BYTE *pData = NULL;\n    pRenderClient->GetBuffer(bufferFrameCount, &pData);\n    //\n    //open wave file.\n    //\n    FILE *fp;\n    string fname = \"C:\\\\Users\\\\rickon\\\\Desktop\\\\3.wav\";\n    if((fp=fopen(fname.c_str(),\"rb\"))==NULL)\n    {\n        printf(\"can not open this wave file\\n\");\n    }\n    fseek(fp, 48, SEEK_CUR);  // forget wave file wave\n    fread(pData,sizeof(BYTE),bufferFrameCount,fp);\n    fseek(fp, bufferFrameCount, SEEK_CUR);\n    printf(\"%x %x\\n\",pData[0],pData[1] );\n\n    // WaveFile MySource ;\n    // MySource.WavRead(fname);\n    // printf(\"%x %x \\n\",MySource.Data[0],MySource.Data[1] );\n   // memcpy(pData,MySource.Data,bufferFrameCount);//copy wav data to audio engine buff\n   //  //\n    //release buff ,i think this fun is sending data in buffer to audio engine.\n    //\n    DWORD flags = 0;\n    pRenderClient->ReleaseBuffer(bufferFrameCount, flags);\n\n\n    hnsActualDuration = (double)REFTIMES_PER_SEC *\n                        bufferFrameCount / pwfx->nSamplesPerSec;\n    Audioclient->Start();  // Start playing.\n    UINT32 numFramesAvailable; \n    UINT32 numFramesPadding;\n    while (flags != AUDCLNT_BUFFERFLAGS_SILENT)\n    {\n        // Sleep for half the buffer duration.\n        Sleep((DWORD)(hnsActualDuration/REFTIMES_PER_MILLISEC/2));\n       \n        // See how much buffer space is available.\n        Audioclient->GetCurrentPadding(&numFramesPadding);\n\n        numFramesAvailable = bufferFrameCount - numFramesPadding;\n\n        // Grab all the available space in the shared buffer.\n        pRenderClient->GetBuffer(numFramesAvailable, &pData);\n\n        // Get next 1/2-second of data from the audio source.\n        // pMySource->LoadData(numFramesAvailable, pData, &flags);\n        if (fread(pData,sizeof(BYTE),bufferFrameCount,fp) == bufferFrameCount)\n            fseek(fp, bufferFrameCount, SEEK_CUR);\n\n        pRenderClient->ReleaseBuffer(numFramesAvailable, flags);\n    }\n    Sleep((DWORD)(hnsActualDuration/REFTIMES_PER_MILLISEC/2));\n\n    Audioclient->Stop();  // Stop playing.\n    fclose(fp);\n    return 0;\n}\n\n",
+			"settings":
+			{
+				"buffer_size": 4484,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "/C/Users/rickon/Desktop/3.WAV",
+			"settings":
+			{
+				"buffer_size": 126289807,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"contents": "int GetWaveData(UINT8* data ,FILE* fp,UINT32 framelen ,int bitperSample)\n{\n	UINT32 temp32[60000];\n	UINT16 temp16[60000];\n	UINT8  temp8[60000];\n	UINT32 data1[60000];\n	if(bitperSample == 8)\n	{fread(temp8,sizeof(UINT8),framelen,fp);\n	 	for (int i = 0; i < framelen; ++i) \n	 	{                                  \n	 		data1[i] = temp8[i];        \n	 	}                                \n	 	memcpy(data,data1,framelen*8); \n	 	return 0;  } \n	else if(bitperSample == 16)\n		{fread(temp16,sizeof(UINT16),framelen,fp);\n				for (int i = 0; i < framelen; ++i) \n				{                                  \n					data1[i] = temp16[i];        \n				}                                \n				memcpy(data,data1,framelen*8);  \n				return 0;}\n	else if(bitperSample == 32)\n	{	fread(temp32,sizeof(UINT32),framelen,fp);\n			for (int i = 0; i < framelen; ++i) \n			{                                  \n				data1[i] = temp32[i];        \n			}                                \n			memcpy(data,data1,framelen*8);  \n			return 0;}\n	else\n		return 0;\n}\n\ntypedef struct tWAVEFORMATEX\n{\n    WORD        wFormatTag;         /* format type */\n    WORD        nChannels;          /* number of channels (i.e. mono, stereo...) */\n    DWORD       nSamplesPerSec;     /* sample rate */\n    DWORD       nAvgBytesPerSec;    /* for buffer estimation */\n    WORD        nBlockAlign;        /* block size of data */\n    WORD        wBitsPerSample;     /* number of bits per sample of mono data */\n    WORD        cbSize;             /* the count in bytes of the size of */\n                                    /* extra information (after cbSize) */\n} WAVEFORMATEX,",
+			"settings":
+			{
+				"buffer_size": 1598,
+				"line_ending": "Windows"
+			}
+		}
+	],
+	"build_system": "",
+	"command_palette":
+	{
+		"height": 58.0,
+		"selected_items":
+		[
+			[
+				"instal",
+				"Package Control: Install Package"
+			],
+			[
+				"insta",
+				"Package Control: Install Package"
+			],
+			[
+				"dis",
+				"Package Control: Disable Package"
+			],
+			[
+				"saa",
+				"File: Save All"
+			],
+			[
+				"INSTAL",
+				"Package Control: Install Package"
+			],
+			[
+				"INSTALL",
+				"Package Control: Install Package"
+			],
+			[
+				"set pyth",
+				"Set Syntax: Python"
+			],
+			[
+				"install",
+				"Package Control: Install Package"
+			]
+		],
+		"width": 400.0
+	},
+	"console":
+	{
+		"height": 126.0,
+		"history":
+		[
+			"import urllib.request,os,hashlib; h = '7183a2d3e96f11eeadd761d777e62404' + 'e330c659d4bb41d3bdf022e94cab3cd0'; pf = 'Package Control.sublime-package'; ipp = sublime.installed_packages_path(); urllib.request.install_opener( urllib.request.build_opener( urllib.request.ProxyHandler()) ); by = urllib.request.urlopen( 'http://sublime.wbond.net/' + pf.replace(' ', '%20')).read(); dh = hashlib.sha256(by).hexdigest(); print('Error validating download (got %s instead of %s), please try manual install' % (dh, h)) if dh != h else open(os.path.join( ipp, pf), 'wb' ).write(by)"
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/F/github/core-audio-apis/coreaudio"
+	],
+	"file_history":
+	[
+		"/F/github/core-audio-apis/coreaudio/coreaudio.vcxproj",
+		"/F/github/core-audio-apis/coreaudio/coreaudio.vcxproj.filters",
+		"/C/Users/rickon/Desktop/02.pcm",
+		"/C/Users/rickon/Desktop/01.wav",
+		"/C/Users/rickon/Desktop/sample.cpp",
+		"/C/Users/rickon/AppData/Roaming/Sublime Text 3/Packages/User/Preferences.sublime-settings",
+		"/F/github/core-audio-apis/coreaudio/coreaudio.cpp",
+		"/C/Users/rickon/AppData/Roaming/Sublime Text 3/Packages/Default/Preferences.sublime-settings",
+		"/C/Users/rickon/Desktop/03.wav",
+		"/C/Users/rickon/Desktop/逃跑计划 - 一万次悲伤.wav",
+		"/C/Users/rickon/Desktop/3.WAV",
+		"/F/github/core-audio-apis/coreaudio/CWaveFile.h",
+		"/F/github/core-audio-apis/coreaudio/coreaudio.cpp.back.cpp",
+		"/C/Users/rickon/Desktop/1.wav",
+		"/C/Users/rickon/Desktop/2.wav",
+		"/C/Users/rickon/Desktop/CWaveFile_src/CWaveFile.h",
+		"/C/Users/rickon/AppData/Roaming/baidu/BaiduYunGuanjia/sounds/1.wav",
+		"/C/Users/rickon/Desktop/CWaveFile_src/filemap.h",
+		"/C/Users/rickon/Desktop/1.mp3",
+		"/E/CloudMusic/蔡琴 - 被遗忘的时光.mp3",
+		"/C/Users/rickon/Desktop/1.pcm",
+		"/C/Users/rickon/Desktop/C++/WASAPICapture.cpp",
+		"/F/github/MicMuter/MicMuter2/main.cpp",
+		"/C/Users/rickon/Desktop/C++/MFSampleGenerator.cpp",
+		"/C/Users/rickon/Desktop/C++/WASAPIRenderer.h",
+		"/C/Users/rickon/Desktop/C++/WASAPIRenderer.cpp",
+		"/C/Users/rickon/AppData/Local/Microsoft/VisualStudio/11.0/Extensions/l4favh5k.vvo/Sample/DirectXTK/Audio/AudioEngine.cpp",
+		"/F/c/coreaudio/coreaudio/coreaudio/stdafx.h",
+		"/F/c/coreaudio/coreaudio/coreaudio/targetver.h",
+		"/F/c/coreaudio/coreaudio/coreaudio/stdafx.cpp",
+		"/F/c/coreaudio/coreaudio/coreaudio/coreaudio.cpp",
+		"/F/github/python/audio/wave.py",
+		"/F/github/python/usbtest.py",
+		"/F/DRC/RegTool v8.2beta1/VTool.ini",
+		"/C/Python27/Lib/site-packages/pywinusb/hid/winapi.py",
+		"/C/Python27/Lib/site-packages/pywinusb/hid/tools.py",
+		"/F/github/python/usb.py",
+		"/F/github/pyusb/docs/tutorial.rst",
+		"/C/Python27/Lib/site-packages/pywinusb/hid/helpers.py",
+		"/F/github/MicMuter/README.md",
+		"/F/github/python/testmast.py",
+		"/F/github/python/test.py",
+		"/F/DRC/DRCCtlUSBV2/DrcCpl/DrcUSBInterface.cpp",
+		"/F/DRC/DRCCtlUSBV2/DrcCpl/DrcCplDlg.cpp",
+		"/F/DRC/DRCCtlUSBV2/DrcCpl/PolicyConfig.h",
+		"/F/DRC/AudioDrcTool/AudioDrcTool/src/com/android/audiodrctool/DrcMainActivity.java",
+		"/F/DRC/AudioDrcTool/AudioDrcTool/src/com/android/audiodrctool/DrawView.java",
+		"/C/Users/rickon/Desktop/mail.txt",
+		"/F/python/opensvn.py",
+		"/C/Python27/Lib/site-packages/setuptools/tests/test_svn.py",
+		"/C/Python27/Tools/Scripts/svneol.py",
+		"/F/c/helloworld/test/test.cpp",
+		"/F/DRC/DRCCtlUSBV2/DrcCpl/DrcCplDlg.h",
+		"/C/Users/rickon/Desktop/HDConfig.via",
+		"/F/DRC/DRCCtlUSBV2/Release/README.txt",
+		"/F/DRC/DRCCtlUSBV2/DrcCpl/DrcUSBInterface.h",
+		"/C/Users/rickon/Desktop/REGConfig.via",
+		"/F/DRC/DrcCtlUSB/DrcCpl/DrcUSBInterface.cpp",
+		"/F/DRC/DrcCpl/DrcCpl/DrcUSBInterface.cpp",
+		"/F/DRC/DrcCpl/DrcCpl/DrcUSBInterface.h",
+		"/F/DRC/AudioDrcTool/AudioDrcTool/jni/drcapi/jni/DrcDsp.cpp",
+		"/G/RegTool v8.2beta1/VTool.ini",
+		"/F/DRC/DrcCpl/DrcCpl/DrcCplDlg.cpp",
+		"/F/DRC/AudioDrcTool/AudioDrcTool/src/com/android/audiodrctool/DrcApi.java",
+		"/F/DRC/addusb/DrcUSBInterface.h",
+		"/F/DRC/addusb/DrcUSBInterface.cpp",
+		"/F/DRC/HWEQForVT3471/ViaHidApi.h",
+		"/F/DRC/HWEQForVT3471/EqInterface.h",
+		"/F/DRC/HWEQForVT3471/EqInterface.cpp",
+		"/F/DRC/DrcCpl/DrcCpl/ViaHidApi.h",
+		"/F/DRC/HWEQForVT3471/VIADev.h",
+		"/F/DRC/HWEQForVT3471/Flash.h",
+		"/F/DRC/DrcCpl/DrcCpl/DrcDsp.cpp",
+		"/F/DRC/HWEQForVT3471/EQDefines.h",
+		"/F/DRC/HWEQForVT3471/EqGraphCpl.sln",
+		"/F/DRC/HWEQForVT3471/EqGraphCplDlg.h",
+		"/F/DRC/HWEQForVT3471/EqGraphCplDlg.cpp",
+		"/F/python/audiotest.py",
+		"/F/python/1.py",
+		"/C/Users/rickon/AppData/Roaming/Sublime Text 3/Packages/User/Base File.sublime-settings",
+		"/C/Users/rickon/AppData/Roaming/Sublime Text 3/Packages/DocBlockr/Base File.sublime-settings",
+		"/F/python/reverse.py",
+		"/C/Users/rickon/AppData/Roaming/Sublime Text 3/Packages/SublimeAStyleFormatter/Default (Windows).sublime-keymap",
+		"/C/Users/rickon/AppData/Roaming/Sublime Text 3/Packages/SublimeAStyleFormatter/SublimeAStyleFormatter.sublime-settings",
+		"/C/Users/rickon/AppData/Roaming/Sublime Text 3/Packages/SublimePythonIDE/SublimePython.sublime-settings",
+		"/F/python/pip.py",
+		"/F/python/hello.py"
+	],
+	"find":
+	{
+		"height": 34.0
+	},
+	"find_in_files":
+	{
+		"height": 90.0,
+		"where_history":
+		[
+			""
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"data1[i]",
+			"data1",
+			"memcpy",
+			"temp8",
+			"EXIT_ON_ERROR",
+			"CoTaskMemFree",
+			"numFramesAvailable",
+			"pAudioClient",
+			"hr = ",
+			"hnsActualDuration",
+			"EXIT_ON_ERROR",
+			"GetService",
+			"short",
+			"Activate",
+			"device",
+			"),\n",
+			"Activate",
+			"initialize",
+			"WAVEFORMATEXTENSIBLE",
+			"usb",
+			"init",
+			"m_fAT",
+			"SYNC_SLD_EDIT_SLOPE_VALUE",
+			"INIT_SLD_SLOPE_CTRL",
+			"Init",
+			"CDrcCplDlg",
+			"m_sldNT",
+			"INIT_SLD_CTRL",
+			"SetRange",
+			"IDC_SLIDER",
+			"bRedraw",
+			"SLIDER",
+			"m_SeekBarExpanderSlope",
+			"m_EditTextExpanderSlope",
+			"main",
+			"ReadRegByte",
+			"type",
+			"req",
+			"PANEL",
+			"sDev",
+			"UpdateDrcSetting",
+			"DAC",
+			"INIT_SLD_SLOPE_CTRL_PROP",
+			"ADCPams",
+			"INIT_SLD_CTRL_PROP",
+			"ADCPams",
+			"INIT_SLD_SLOPE_CTRL_Value",
+			"INIT_SLD_CTRL_Value",
+			"selct",
+			"init",
+			"WriteAllHWDrc",
+			"OnCbnSelchangeComboEp",
+			"SAVE_ADCDRC_KEY",
+			"OnBnClickedButton2",
+			"0x93",
+			"0x0a59",
+			"0x9c",
+			"0x02",
+			"UpdateDrcSetting",
+			"CHwDrcVerb",
+			"WriteAllHWDrc",
+			"UpdateDrcSetting",
+			"m_listSR",
+			"96",
+			"48",
+			"16",
+			"Capture",
+			"step",
+			"m_fCS",
+			"m_fCT",
+			"m_BaseAddr",
+			"m_fLT",
+			"m_fAT",
+			"UpdateDrcTimeByUsb",
+			"WriteRegByte",
+			"float",
+			"UpdateDrcSetting",
+			"EnumViaUsbDevices",
+			"TARGET_DEVICE",
+			"m_f##Key",
+			"CHwDrcVerb",
+			"data",
+			"rickon",
+			"m_BaseAddr",
+			"m_fAT",
+			";\n",
+			"Eq",
+			"EQ",
+			"Eq",
+			"EQ",
+			"eq",
+			"EQ",
+			"eq",
+			"EQ",
+			"eq",
+			"EQ",
+			"eq",
+			"EQ",
+			"eq",
+			"EQ",
+			"eq",
+			"EQ",
+			"eq",
+			"EQ",
+			"eq",
+			"EQ",
+			"Eq",
+			"EQ",
+			"Eq",
+			"EQ",
+			"CHwDRCVerb",
+			"Eq",
+			"EQ",
+			"Eq",
+			"EQ",
+			"eq",
+			"EQ",
+			"eq",
+			"EQ",
+			"eq",
+			"EQ",
+			"eq",
+			"EQ",
+			"eq",
+			"EQ",
+			"eq",
+			"EQ",
+			"eq"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 0,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "getwave.cpp",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1619,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1616,
+								1616
+							]
+						],
+						"settings":
+						{
+							"force_encoding": "GBK",
+							"in_converting": true,
+							"origin_encoding": "GBK",
+							"revert_to_scratch": true,
+							"syntax": "Packages/C++/C++.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 462.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "coreaudio.cpp",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 5344,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1095,
+								1107
+							]
+						],
+						"settings":
+						{
+							"origin_encoding": "ASCII",
+							"syntax": "Packages/C++/C++.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 84.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "CWaveFile.h",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3650,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								126,
+								126
+							]
+						],
+						"settings":
+						{
+							"origin_encoding": "ASCII",
+							"syntax": "Packages/C++/C++.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 84.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "/C/Users/rickon/Desktop/1.wav",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 98287,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								10,
+								19
+							]
+						],
+						"settings":
+						{
+							"origin_encoding": "Hexadecimal",
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 6,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 4484,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								144,
+								144
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 42.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "/C/Users/rickon/Desktop/3.WAV",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 126289807,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								119,
+								0
+							]
+						],
+						"settings":
+						{
+							"origin_encoding": "Hexadecimal",
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1598,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1598,
+								1598
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 210.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 34.0
+	},
+	"input":
+	{
+		"height": 0.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.exec":
+	{
+		"height": 186.0
+	},
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"project": "core audio.sublime-project",
+	"replace":
+	{
+		"height": 40.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+			[
+				"eqin",
+				"EqInterface.cpp"
+			]
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 500.0,
+		"selected_items":
+		[
+		],
+		"width": 380.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 202.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
