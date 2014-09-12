@@ -2,9 +2,29 @@
 #define WAVEFILE_H
 
 #include <string>
-// refer to http://blog.csdn.net/maverick1990/article/details/8996608
-using namespace std;
 
+using namespace std;
+#ifndef WAVEHEADOFFSET
+#define WAVEHEADOFFSET 0
+
+#define CHUNKID 0  //RIFF
+#define CHUNKSIZE 4 //head len ,no include 
+					//chunkid and chunksize
+#define FORMATE 8 //WAVE
+#define SUBCHHUNK1ID 12//fmt
+#define SUBCHUNK1SIZE 16 //
+#define AUDIOFORMAT 20 //
+#define NUMCHANNELS 22 //channels num
+#define SAMPLERATE 24 //sample rate
+#define BYTERATE 28 //the number of bytes per sec
+#define BLOCKALIGN 32 //data ALIGN  size of 
+					//one frame(channels * bitperSample/8).
+#define BITSPERSAMPLE 34// one channel
+#define SUBCHUNK2ID 36//"data"
+#define SUBCHUNK2SIZE 40 //data lens
+#define DATA 44 //
+#endif
+extern int GetWaveData(UINT8* data ,FILE* fp,UINT32 framelen,int bitperSample);
 class WaveFile
 {
 public:

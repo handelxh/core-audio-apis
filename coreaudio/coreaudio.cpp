@@ -8,7 +8,7 @@
 #include "Audiopolicy.h"  //WASAPI interface
 #include <EndpointVolume.h>
 #include "CWaveFile.h"
-#define REFTIMES_PER_SEC  10000000
+#define REFTIMES_PER_SEC  10000*1000*1
 #define REFTIMES_PER_MILLISEC  10000
 
 // #define EXIT_ON_ERROR(hres)  \
@@ -83,23 +83,28 @@ int _tmain(int argc, _TCHAR *argv[])
 
     // Load the initial data into the shared buffer.
     FILE *fp;
-    string fname = "C:\\Users\\rickon\\Desktop\\3.wav";
+    string fname = "C:\\Users\\rickon\\Desktop\\01.wav";
     if ((fp = fopen(fname.c_str(), "rb")) == NULL)
     {
         printf("can not open this wave file\n");
     }
-    fseek(fp, 48, SEEK_CUR);  // forget wave file wave
-    fread(pData, sizeof(BYTE), bufferFrameCount, fp);
-    fseek(fp, bufferFrameCount, SEEK_CUR);
-	printf("%d \n",pwfx->wBitsPerSample);
-    // printf("%x %x %x %x\n", pData[0], pData[1],pData[2],pData[3] );
-    for (int i = 0; i < 0xcc44; i+=16)
-    {
-        printf("%x%x %x%x %x%x %x%x %x%x %x%x %x%x %x%x\n", 
-            pData[i], pData[i+1],pData[i+2],pData[i+3],pData[i+4],
-            pData[i+5],pData[i+6],pData[i+7],pData[i+8], pData[i+1+8],pData[i+2+8],pData[i+3+8],pData[i+4+8],
-            pData[i+5+8],pData[i+6+8],pData[i+7+8]);
-    }
+    int bitperSample = 0;
+    fseek(fp,BITSPERSAMPLE,SEEK_SET);
+    fread(&bitperSample,sizeof(UINT16),1,fp);
+    bitperSample = (bitperSample &0xff00>>8) |(bitperSample&0x00ff <<8);
+    fseek(fp,DATA,SEEK_SET);
+    // GetWaveData( pData ,fp,bufferFrameCount ,bitperSample);
+    fread(pData,sizeof(BYTE),bufferFrameCount*8,fp);
+    // 
+    // 
+    // printf("%x %x %x %x %x\n", pData[0], pData[1],pData[2],pData[3],pData[4] );
+    // for (int i = 0; i < 0xcc44; i+=16)
+    // {
+    //     printf("%x%x %x%x %x%x %x%x %x%x %x%x %x%x %x%x\n", 
+    //         pData[i], pData[i+1],pData[i+2],pData[i+3],pData[i+4],
+    //         pData[i+5],pData[i+6],pData[i+7],pData[i+8], pData[i+1+8],pData[i+2+8],pData[i+3+8],pData[i+4+8],
+    //         pData[i+5+8],pData[i+6+8],pData[i+7+8]);
+    // }
 
     hr = pRenderClient->ReleaseBuffer(bufferFrameCount, flags);
     // EXIT_ON_ERROR(hr)
@@ -130,9 +135,8 @@ int _tmain(int argc, _TCHAR *argv[])
         // Get next 1/2-second of data from the audio source.
         // hr = pMySource->LoadData(numFramesAvailable, pData, &flags);
        // EXIT_ON_ERROR(hr);
-        if (fread(pData, sizeof(BYTE), bufferFrameCount, fp) == bufferFrameCount)
-            fseek(fp, bufferFrameCount, SEEK_CUR);
-
+        //GetWaveData( pData ,fp,numFramesAvailable ,bitperSample);
+        fread(pData,sizeof(BYTE),numFramesAvailable*8,fp);
 
         hr = pRenderClient->ReleaseBuffer(numFramesAvailable, flags);
         // EXIT_ON_ERROR(hr)
@@ -150,7 +154,7 @@ int _tmain(int argc, _TCHAR *argv[])
     SAFE_RELEASE(pDevice)
     SAFE_RELEASE(pAudioClient)
     SAFE_RELEASE(pRenderClient)
-fclose(fp);
+    fclose(fp);
     return hr;
 }
 
