@@ -7,9 +7,9 @@
 //-----------------------------------------------------------
 
 // REFERENCE_TIME time units per second and per millisecond
+#include "stdafx.h"
 #include "coreaudiocaoture.h"
-
-HRESULT RecordAudioStream(MyAudioSink *pMySink)
+HRESULT CoreAudioCapture(FILE *fp)
 {
     HRESULT hr;
     REFERENCE_TIME hnsRequestedDuration = REFTIMES_PER_SEC;
@@ -25,71 +25,60 @@ HRESULT RecordAudioStream(MyAudioSink *pMySink)
     BOOL bDone = FALSE;
     BYTE *pData;
     DWORD flags;
-
+    CoInitialize(NULL);  //to tell system creat COM by single thread!!!!
     hr = CoCreateInstance(
-           CLSID_MMDeviceEnumerator, NULL,
-           CLSCTX_ALL, IID_IMMDeviceEnumerator,
-           (void**)&pEnumerator);
-    EXIT_ON_ERROR(hr)
+             CLSID_MMDeviceEnumerator, NULL,
+             CLSCTX_ALL, IID_IMMDeviceEnumerator,
+             (void **)&pEnumerator);
 
     hr = pEnumerator->GetDefaultAudioEndpoint(
-                        eCapture, eConsole, &pDevice);
-    EXIT_ON_ERROR(hr)
+             eCapture, eConsole, &pDevice);
 
     hr = pDevice->Activate(
-                    IID_IAudioClient, CLSCTX_ALL,
-                    NULL, (void**)&pAudioClient);
-    EXIT_ON_ERROR(hr)
+             IID_IAudioClient, CLSCTX_ALL,
+             NULL, (void **)&pAudioClient);
 
     hr = pAudioClient->GetMixFormat(&pwfx);
-    EXIT_ON_ERROR(hr)
 
     hr = pAudioClient->Initialize(
-                         AUDCLNT_SHAREMODE_SHARED,
-                         0,
-                         hnsRequestedDuration,
-                         0,
-                         pwfx,
-                         NULL);
-    EXIT_ON_ERROR(hr)
+             AUDCLNT_SHAREMODE_SHARED,
+             0,
+             hnsRequestedDuration,
+             0,
+             pwfx,
+             NULL);
 
     // Get the size of the allocated buffer.
     hr = pAudioClient->GetBufferSize(&bufferFrameCount);
-    EXIT_ON_ERROR(hr)
 
     hr = pAudioClient->GetService(
-                         IID_IAudioCaptureClient,
-                         (void**)&pCaptureClient);
-    EXIT_ON_ERROR(hr)
+             IID_IAudioCaptureClient,
+             (void **)&pCaptureClient);
 
     // Notify the audio sink which format to use.
-    hr = pMySink->SetFormat(pwfx);
-    EXIT_ON_ERROR(hr)
+    //hr = pMySink->SetFormat(pwfx);
 
     // Calculate the actual duration of the allocated buffer.
     hnsActualDuration = (double)REFTIMES_PER_SEC *
-                     bufferFrameCount / pwfx->nSamplesPerSec;
+                        bufferFrameCount / pwfx->nSamplesPerSec;
 
     hr = pAudioClient->Start();  // Start recording.
-    EXIT_ON_ERROR(hr)
 
     // Each loop fills about half of the shared buffer.
     while (bDone == FALSE)
     {
         // Sleep for half the buffer duration.
-        Sleep(hnsActualDuration/REFTIMES_PER_MILLISEC/2);
+        Sleep(hnsActualDuration / REFTIMES_PER_MILLISEC / 2);
 
         hr = pCaptureClient->GetNextPacketSize(&packetLength);
-        EXIT_ON_ERROR(hr)
 
         while (packetLength != 0)
         {
             // Get the available data in the shared buffer.
             hr = pCaptureClient->GetBuffer(
-                                   &pData,
-                                   &numFramesAvailable,
-                                   &flags, NULL, NULL);
-            EXIT_ON_ERROR(hr)
+                     &pData,
+                     &numFramesAvailable,
+                     &flags, NULL, NULL);
 
             if (flags & AUDCLNT_BUFFERFLAGS_SILENT)
             {
@@ -97,20 +86,16 @@ HRESULT RecordAudioStream(MyAudioSink *pMySink)
             }
 
             // Copy the available capture data to the audio sink.
-            hr = pMySink->CopyData(
-                              pData, numFramesAvailable, &bDone);
-            EXIT_ON_ERROR(hr)
+            //            hr = pMySink->CopyData(
+            //                              pData, numFramesAvailable, &bDone);
 
             hr = pCaptureClient->ReleaseBuffer(numFramesAvailable);
-            EXIT_ON_ERROR(hr)
 
             hr = pCaptureClient->GetNextPacketSize(&packetLength);
-            EXIT_ON_ERROR(hr)
         }
     }
 
     hr = pAudioClient->Stop();  // Stop recording.
-    EXIT_ON_ERROR(hr)
 
 Exit:
     CoTaskMemFree(pwfx);

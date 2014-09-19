@@ -86,6 +86,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="coreaudio.cpp" />
+    <ClCompile Include="coreaudiocaoture.cpp" />
     <ClCompile Include="coreaudiorender.cpp" />
     <ClCompile Include="getwave.cpp" />
     <ClCompile Include="stdafx.cpp">

@@ -44,5 +44,8 @@
     <ClCompile Include="coreaudiorender.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="coreaudiocaoture.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

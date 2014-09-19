@@ -5,4 +5,8 @@
 #include "Audiopolicy.h"  //WASAPI interface
 #include <EndpointVolume.h>
 #include "CWaveFile.h"
-extern int CoreAudioRender(FILE *fp);
+#include <process.h>  
+#include "windows.h"
+extern unsigned int WINAPI CoreAudioRender(void *);
+extern HRESULT CoreAudioCapture(FILE *fp);
+FILE *frp;
