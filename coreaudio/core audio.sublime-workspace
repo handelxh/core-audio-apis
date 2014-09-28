@@ -107,42 +107,6 @@
 	},
 	"buffers":
 	[
-		{
-			"file": "coreaudio.cpp",
-			"settings":
-			{
-				"buffer_size": 1095,
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "coreaudiorender.cpp",
-			"settings":
-			{
-				"buffer_size": 4660,
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"contents": "\n#include \"stdafx.h\"\n#include <string.h>\n#include \"Mmdeviceapi.h\"   //IMMDevice interface\n#include  \"Audioclient.h\" //WASAPI\n#include \"Audiopolicy.h\"  //WASAPI interface\n#include <EndpointVolume.h>\n#include \"CWaveFile.h\"\n\nint GetWaveData(UINT8 *data , FILE *fp, UINT32 framelen , int bitperSample)\n{\n    UINT32 temp32[60000];\n    UINT16 temp16[60000];\n    UINT8  temp8[60000];\n    UINT32 data1[60000];\n    if (bitperSample == 8)\n    {\n        fread(temp8, sizeof(UINT8), framelen, fp);\n        for (int i = 0; i < framelen; ++i)\n        {\n            data1[i] = temp8[i];\n        }\n        memcpy(data, data1, framelen * 8);\n        return 0;\n    }\n    else if (bitperSample == 16)\n    {\n        fread(temp16, sizeof(UINT16), framelen, fp);\n        for (int i = 0; i < framelen; ++i)\n        {\n            data1[i] = temp16[i];\n        }\n        memcpy(data, data1, framelen * 8);\n        return 0;\n    }\n    else if (bitperSample == 32)\n    {\n        fread(temp32, sizeof(UINT32), framelen, fp);\n        for (int i = 0; i < framelen; ++i)\n        {\n            data1[i] = temp32[i];\n        }\n        memcpy(data, data1, framelen * 8);\n        return 0;\n    }\n    else\n        return 0;\n}\n\n\n// 5249 4646 a099 0000 5741 5645 666d 7420\n// 1000 0000 0100 0200 007d 0000 00fa 0000\n// 0200 0800 6461 7461 7c99 0000\n\n// 5249 4646 a4e3 0203 5741 5645 666d 7420\n// 1000 0000 0100 0200 44ac 0000 10b1 0200\n// 0400 1000 6461 7461 80e3 0203\n//\n// 5249 4646 a4aa 6b00 5741 5645 666d 7420\n// 1000 0000 0300 0200 44ac 0000 2062 0500\n// 0800 2000 6461 7461 80aa 6b00\n// typedef struct tWAVEFORMATEX\n// {\n//     WORD        wFormatTag;         /* format type */\n//     WORD        nChannels;          /* number of channels (i.e. mono, stereo...) */\n//     DWORD       nSamplesPerSec;     /* sample rate */\n//     DWORD       nAvgBytesPerSec;    /* for buffer estimation */\n//     WORD        nBlockAlign;        /* block size of data */\n//     WORD        wBitsPerSample;     /* number of bits per sample of mono data */\n//     WORD        cbSize;             /* the count in bytes of the size of */\n//     /* extra information (after cbSize) */\n// } WAVEFORMATEX\n\nvoid GetWaveFormate(FILE *fp, WAVEFORMATEX *waveformat)\n{\n    DWORD temp;\n    waveformat->wFormatTag = 0xfffe;\n    fseek(fp, NUMCHANNELS, SEEK_SET);\n    fread(&temp, sizeof(BYTE), 2, fp);\n    waveformat->nChannels = temp;\n    temp = 0;\n    fseek(fp, SAMPLERATE, SEEK_SET);\n    fread(&temp, sizeof(BYTE), 4, fp);\n    waveformat->nSamplesPerSec = temp;\n    temp = 0;\n    fseek(fp, BYTERATE, SEEK_SET);\n    fread(&temp, sizeof(BYTE), 4, fp);\n    waveformat->nAvgBytesPerSec = temp;\n    temp = 0;\n    fseek(fp, BLOCKALIGN, SEEK_SET);\n    fread(&temp, sizeof(BYTE), 2, fp);\n    waveformat->nBlockAlign = temp;\n    temp = 0;\n    fseek(fp, BITSPERSAMPLE, SEEK_SET);\n    fread(&temp, sizeof(BYTE), 2, fp);\n    waveformat->wBitsPerSample = temp;\n    temp = 0;\n    waveformat->cbSize = 22;\n}",
-			"file": "getwave.cpp",
-			"file_size": 3029,
-			"file_write_time": 130549633801400101,
-			"settings":
-			{
-				"buffer_size": 2931,
-				"line_ending": "Windows",
-				"scratch": true
-			}
-		},
-		{
-			"file": "coreaudiorender.h",
-			"settings":
-			{
-				"buffer_size": 699,
-				"line_ending": "Windows"
-			}
-		}
 	],
 	"build_system": "",
 	"command_palette":
@@ -208,21 +172,34 @@
 	},
 	"expanded_folders":
 	[
-		"/F/github/core-audio-apis/coreaudio"
 	],
 	"file_history":
 	[
-		"/F/github/core-audio-apis/coreaudio/notification.h",
+		"/F/github/audioplayer/audioplayer/audioplayer/coreaudiorender.cpp",
+		"/F/github/audioplayer/audioplayer/audioplayer/CWaveFile.h",
+		"/F/github/audioplayer/audioplayer/audioplayer/coreaudiorender.h",
+		"/F/github/audioplayer/audioplayer/audioplayer/audioplayer.cpp",
+		"/F/github/audioplayer/audioplayer/audioplayer/audioplayerDlg.cpp",
+		"/F/github/audioplayer/audioplayer/audioplayer/audioplayer.h",
+		"/F/github/audioplayer/audioplayer/audioplayer/audioplayerDlg.h",
+		"/C/Users/rickon/Desktop/RenderSharedTimerDriven/WASAPIRenderer.cpp",
+		"/C/Users/rickon/Desktop/RenderSharedTimerDriven/WASAPIRenderer.h",
+		"/C/Users/rickon/Desktop/RenderSharedTimerDriven/WASAPIRenderSharedTimerDriven.cpp",
+		"/F/github/audioplayer/audioplayer/audioplayer/define.h",
+		"/F/github/audioplayer/audioplayer/audioplayer/res/define.h",
+		"/F/github/core-audio-apis/coreaudio/coreaudiorender.h",
+		"/F/github/core-audio-apis/coreaudio/coreaudiorender.cpp",
 		"/F/github/core-audio-apis/coreaudio/coreaudio.h",
+		"/F/github/core-audio-apis/coreaudio/coreaudio.cpp",
+		"/C/Users/rickon/Desktop/之秋自述-摄影师的爱好.txt",
+		"/F/github/core-audio-apis/coreaudio/getwave.cpp",
+		"/F/github/core-audio-apis/coreaudio/notification.h",
 		"/C/Users/rickon/AppData/Roaming/Sublime Text 3/Packages/User/Preferences.sublime-settings",
 		"/C/Users/rickon/AppData/Roaming/Sublime Text 3/Packages/Default/Preferences.sublime-settings",
 		"/F/github/core-audio-apis/coreaudio/CWaveFile.h",
 		"/F/github/core-audio-apis/coreaudio/coreaudiocaoture.cpp",
 		"/F/github/core-audio-apis/coreaudio/coreaudiocaoture.h",
 		"/F/github/core-audio-apis/coreaudio/CWaveFile.cpp",
-		"/F/github/core-audio-apis/coreaudio/coreaudiorender.h",
-		"/F/github/core-audio-apis/coreaudio/coreaudiorender.cpp",
-		"/F/github/core-audio-apis/coreaudio/getwave.cpp",
 		"/C/Users/rickon/Desktop/caiqin.wav",
 		"/E/CloudMusic/蔡琴 - 被遗忘的时光.mp3",
 		"/C/Users/rickon/Desktop/3.WAV",
@@ -233,7 +210,6 @@
 		"/C/Users/rickon/Desktop/02.pcm",
 		"/C/Users/rickon/Desktop/01.wav",
 		"/C/Users/rickon/Desktop/sample.cpp",
-		"/F/github/core-audio-apis/coreaudio/coreaudio.cpp",
 		"/C/Users/rickon/Desktop/03.wav",
 		"/C/Users/rickon/Desktop/逃跑计划 - 一万次悲伤.wav",
 		"/F/github/core-audio-apis/coreaudio/coreaudio.cpp.back.cpp",
@@ -327,6 +303,29 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"main",
+			"filedate",
+			"_RenderBufferQueue",
+			"renderBuffer",
+			"_RenderBufferQueue",
+			"Start",
+			"RenderBuffer",
+			"CWASAPIRenderer",
+			"CoreAudioRender",
+			"datelen",
+			"UNIT",
+			"m_pMainWnd",
+			"CaudioplayerDlg",
+			"frp",
+			"audioplayerDlg.h",
+			"coreaudiorender.h",
+			"coreaudiorender",
+			"scdu",
+			"fseek",
+			"m_sld##Key",
+			"m_sld",
+			"this->fp",
+			"fp",
 			"CMMNotificationClient",
 			"pData",
 			"readnum",
@@ -431,29 +430,6 @@
 			"Eq",
 			"EQ",
 			"eq",
-			"EQ",
-			"eq",
-			"EQ",
-			"eq",
-			"EQ",
-			"eq",
-			"EQ",
-			"eq",
-			"EQ",
-			"eq",
-			"EQ",
-			"eq",
-			"EQ",
-			"eq",
-			"EQ",
-			"Eq",
-			"EQ",
-			"Eq",
-			"EQ",
-			"CHwDRCVerb",
-			"Eq",
-			"EQ",
-			"Eq",
 			"EQ"
 		],
 		"highlight": true,
@@ -463,7 +439,7 @@
 		"replace_history":
 		[
 		],
-		"reverse": true,
+		"reverse": false,
 		"show_context": true,
 		"use_buffer2": true,
 		"whole_word": false,
@@ -472,132 +448,8 @@
 	"groups":
 	[
 		{
-			"selected": 1,
 			"sheets":
 			[
-				{
-					"buffer": 0,
-					"file": "coreaudio.cpp",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1095,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								820,
-								820
-							]
-						],
-						"settings":
-						{
-							"origin_encoding": "ASCII",
-							"syntax": "Packages/C++/C++.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 210.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 2,
-					"type": "text"
-				},
-				{
-					"buffer": 1,
-					"file": "coreaudiorender.cpp",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 4660,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								4573,
-								4605
-							]
-						],
-						"settings":
-						{
-							"origin_encoding": "ASCII",
-							"syntax": "Packages/C++/C++.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 1470.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 0,
-					"type": "text"
-				},
-				{
-					"buffer": 2,
-					"file": "getwave.cpp",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 2931,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								401,
-								401
-							]
-						],
-						"settings":
-						{
-							"in_converting": true,
-							"origin_encoding": "GBK",
-							"syntax": "Packages/C++/C++.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 3,
-					"type": "text"
-				},
-				{
-					"buffer": 3,
-					"file": "coreaudiorender.h",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 699,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								415,
-								422
-							]
-						],
-						"settings":
-						{
-							"origin_encoding": "ASCII",
-							"syntax": "Packages/C++/C++.tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 1,
-					"type": "text"
-				}
 			]
 		}
 	],
@@ -651,6 +503,10 @@
 		"height": 0.0,
 		"selected_items":
 		[
+			[
+				"addlg",
+				"audioplayer\\audioplayerDlg.cpp"
+			],
 			[
 				"cwav",
 				"CWaveFile.h"

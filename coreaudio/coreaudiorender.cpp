@@ -140,5 +140,5 @@ unsigned int WINAPI CoreAudioRender(void *)
     SAFE_RELEASE(pRenderClient)
     CoUninitialize();
     fclose(frp);
-    return hr;
+    return 0;
 }
